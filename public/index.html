@@ -1,0 +1,117 @@
+<!-- Fichier: public/index. html -->
+<! DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste de Tâches</title>
+    <style>
+        body {
+            font-family:  Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .add-task {
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 70%;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+        . task-item {
+            background:  #f4f4f4;
+            padding: 15px;
+            margin:  10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background: #e74c3c;
+            color:  white;
+            border: none;
+            padding:  5px 15px;
+            border-radius:  3px;
+            cursor:  pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ma Liste de Tâches</h1>
+    
+    <div class="add-task">
+        <input type="text" id="taskInput" placeholder="Nouvelle tâche...">
+        <button onclick="addTask()">Ajouter</button>
+    </div>
+    
+    <ul id="taskList" class="task-list"></ul>
+
+    <script>
+        // Charger les tâches au démarrage
+        loadTasks();
+
+        // Fonction pour charger et afficher les tâches
+        async function loadTasks() {
+            const response = await fetch('/api/tasks');
+            const tasks = await response.json();
+            
+            const taskList = document.getElementById('taskList');
+            taskList. innerHTML = '';
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <span>${task.title}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">Supprimer</button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        // Fonction pour ajouter une tâche
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const title = input.value. trim();
+            
+            if (! title) {
+                alert('Veuillez entrer une tâche');
+                return;
+            }
+            
+            await fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON. stringify({ title })
+            });
+            
+            input.value = '';
+            loadTasks();
+        }
+
+        // Fonction pour supprimer une tâche
+        async function deleteTask(id) {
+            await fetch(`/api/tasks/${id}`, {
+                method: 'DELETE'
+            });
+            
+            loadTasks();
+        }
+    </script>
+</body>
+</html>
